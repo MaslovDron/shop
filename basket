@@ -1,0 +1,120 @@
+<?php
+include 'app/include/config.php';
+include 'app/include/connect.php';
+include 'app/include/front-functions.php';
+include 'app/include/cook.php';
+include 'app/controllers/basketController.php';
+//tt($user_id);
+//tt(LotsInBasket($user_id));
+$CountBasket=CountAllParamBasket('cart',['user_id'=>$user_id]);
+//tt($CountBasket);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title><?=NAMESITE;?> >> Моя корзина</title>
+   <meta name="description" content="<?=NAMESITE;?> >> Корзина">
+ <!-- ставим иконки -->
+   <link rel="shortcut icon" href="<?=ABS_PATH?>images/icon.ico" type="image/x-icon">
+   <link rel="icon" href="<?=ABS_PATH?>images/icon.ico" type="image/x-icon">
+   <!-- ставим иконки -->
+   <!-- font awesome cdn link  -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- style-->
+   <link rel="stylesheet" href="<?=ABS_PATH?>assets/css/style.css">
+   <!-- style-->
+</head>
+<body>
+    <section class="main">
+<?php
+//tt($categories);
+include 'app/include/header-front.php';
+include 'app/include/menu1.php'
+?>
+<div class="blog_menu">
+<h3>Корзина </h3>
+</div>
+<?php
+if($CountBasket<1)
+{
+    ?>
+    <div class="basket-container">
+<div class="mess"><p>Корзина пуста</p></div>
+</div>
+    <?php
+}
+else
+{
+?>
+<div class="lots">
+<?php
+    $LBS=LotsInBasket($user_id);
+    $grand_total = 0;
+    foreach($LBS as $LB)
+        {
+            ?>
+            <div class="lot-razd">
+            <form action="" method="$_POST" class="box-product" id="AddKart">
+                <div class="pokupka">
+                    <div class="pokupka-del"><a href="?del_basket=<?=$LB['cart_id'];?>" class="delete-btn"><i class="fa-solid fa-trash"></i></a></div> 
+                    <div class="razd-img"><img src="<?=ABS_PATH?>images/<?=$LB['tovari_image'];?>" alt="<?=$LB['tovari_name']?>"></div>
+                    <div class="name"><?=$LB['tovari_name'];?></div>
+                    <div class="flex">
+                        <p class="kolvo">Количество <i><?=$LB['cart_qty']?></i></p>
+                        <?php
+                        if($LB['tovari_new_price']>0)
+                        {
+                            $price=$LB['tovari_new_price'];
+                        }
+                        else
+                        {
+                            $price=$LB['tovari_price'];
+                        }
+                        ?>
+
+                        <p>Цена <i><?=$price?></i></p>
+                    </div>
+                    <div class="flex">                           
+                    <div class="schet">
+                    <div class="minus" data-action="minus">-</div>
+                    <input type="number" name="qty" class="qty" data-counter size="3" value="<?=$LB['cart_qty']?>" min="1" max="99" maxlength="99">
+                    <div class="plus" data-action="plus">+</div>
+                    </div>
+                    
+                    </div>
+                  <!-- Я эксперементирую -->
+                    <div class="flex">
+                        <p>Итого по товару <i> - <?=$LB['cart_qty']*$price ?> руб</i></p>
+                        <?php
+                        $grand_total +=($LB['cart_qty']*$price);
+                        ?>
+                    </div>
+                    <!-- <a href="?del_basket=<?=$LB['cart_id'];?>" class="btn-red">Удалить товар</a>   -->
+                    </div>                        
+            </form>
+            </div>
+            <?php
+        }
+    ?>
+</div>
+<div class="grand-total">
+    <p>итого по корзине <i><?=$grand_total?> руб</i></p>
+    <a href="checkout.php" class="btn-red">Оформить заказ</a>
+    <a href="?delete_basket=delete" class="btn-red">Очистить корзину</a>
+</div>
+    <?php
+}
+?>
+    </section>
+    <!-- моб меню -->
+    <script src="<?=ABS_PATH?>assets/js/menu.js"></script>
+    <script src="<?=ABS_PATH?>assets/js/counter.js"></script>
+       <!-- моб меню -->
+   <?php
+      include 'app/include/footer-front.php';
+      ?>
+</body>
+</html>
