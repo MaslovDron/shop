@@ -1,0 +1,270 @@
+<?php
+include 'app/include/config.php';
+include 'app/include/connect.php';
+include 'app/include/front-functions.php';
+include 'app/include/cook.php';
+include 'app/controllers/basketController.php';
+$CountBasket=CountAllParamBasket('cart',['user_id'=>$user_id]);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title><?=NAMESITE;?> >> Оформление заказа></title>
+   <meta name="description" content="<?=NAMESITE;?> >> ОФормление заказа">
+       <!-- ставим иконки -->
+   <link rel="shortcut icon" href="<?=ABS_PATH?>images/icon.ico" type="image/x-icon">
+   <link rel="icon" href="<?=ABS_PATH?>images/icon.ico" type="image/x-icon">
+   <!-- ставим иконки -->
+    
+   <!-- font awesome cdn link  -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- style-->
+   <link rel="stylesheet" href="<?=ABS_PATH?>assets/css/style.css">
+   <!-- style-->
+    <!-- календарь -->
+   <link rel="stylesheet" href="<?=ABS_PATH?>assets/css/calendar.css">
+   <!-- календарь -->
+    <!--подключение API yandex-карты-->
+    <!-- <script src="https://api-maps.yandex.ru/2.1/?apikey=6d593bc0-9158-4193-b8eb-598d3f395488&lang=ru_RU" type="text/javascript"></script> -->
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=fcff8e2d-0e97-42b4-8373-513cabe168f1&lang=ru_RU" type="text/javascript"></script>
+    <!--подключение API yandex-карты-->
+    
+    <!-- для подсказок адреса -->
+    <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/css/suggestions.min.css" rel="stylesheet" />
+    <!-- для подсказок адреса -->
+</head>
+<body>
+<section class="main">
+<?php
+//tt($categories);
+include 'app/include/header-front.php';
+include 'app/include/menu1.php'
+?>
+<?php
+if($CountBasket<1)//если корзина пуста
+{
+?>
+        <div class="basket-container">
+<div class="mess"><p>В корзине нет товаров</p></div>
+</div>
+<?php
+}
+
+else//если корзина не пуста
+{
+?>
+<div id="map" class="map"></div>
+<div class="blog_menu"><h3>Оформление заказа</h3></div>
+<!--
+<div class="error" id="error"></div>
+-->
+<form action="" id="myForm" method="POST">
+<?=$errMsg;?>
+      <div class="grid_osn">
+            <div class="grid">
+                  <div class="box_l">
+                        <div class="inpdiv">
+                              <p class="inp">Ваше имя<span>*</span></p>
+                              <input type="text" name="name" id="nameInp" placeholder="Ваше имя" class="input" value="<?=$name;?>">
+                        </div>
+                        <div class="inpdiv">
+                              <p class="inp">Ваш телефон<span>*</span></p>
+                              <input type="phone" name="number" id="phoneInp" placeholder="+7(999)-999-99-99" class="input maska-nomera" value="<?=$numbtr;?>">
+                        </div>
+                        
+                        <div class="inpdiv1">
+                              <h3>Способ доставки</h3>
+                                    <div class="radbtn_vivoz">
+                                          <p class="rb">
+                                          <input type="radio" checked name="met_dost" onclick="metod_dost()" id="met_dost1" value="sami" class="samovivoz <?=$class?>">
+                                          <label for="met_dost1">Самовывоз</label> 
+                                          </p>
+                                          <p class="rb">
+                                          <input type="radio" name="met_dost" onclick="metod_dost()" id="met_dost2" value="kur" class="kurer">
+                                          <label for="met_dost2">Курьером</label> 
+                                          <div class="adr">Заказ можно забрать по адресу: <?=ADDRESS;?></div>                     
+                                          </p>
+                                    </div>
+                        
+                    </div>
+      
+      <div class="inpdiv1 timedoston" id="adr_dost">
+       <p class="inp">Адрес доставки<span>*</span></p>
+      <div class="divadr">
+            <input type="text" id="address" class="input" name="address" placeholder="Введите свой адрес" value="<?=$address?>">
+            <div id="suggestions"></div>
+            <p class="inp">Способ оплаты</p>
+                <p class="rb">
+                <input type="radio" checked name="met_opl" id="met_opl1" value="nalich">
+                <label for="met_opl1">Наличными при получении</label>
+                </p>
+                <p class="rb">
+                <input type="radio" name="met_opl" id="met_opl2" value="karta">
+                <label for="met_opl2">Картой</label>
+                </p>
+        <div class="cena_dost">
+        <input type="text" id="cena" name="cena" readonly value="<?=$cena?>">
+        </div>
+      </div>      
+    </div>
+    <div class="radbtn2">
+                        <h3>Как быстро надо доставить/приготовить/ заказ</h3>
+                              <p class="rb">
+                               <input type="radio" onclick="checkrb()" checked name="dost" id="rb1" value="bitro">
+                               <label for="rb1">Как можно скорее</label>
+                              </p>
+                              <p class="rb">
+                              <input type="radio" onclick="checkrb()" name="dost" id="rb2" value="time_dostav">
+                              <label for="rb2">К определенному времени</label>
+                              <!-- <input type="text" name="tymedst" required maxlength="50" placeholder="время доставки" class="radb timedoston"> -->
+                              <!-- <input type="text" name="tymedst" maxlength="50" placeholder="время доставки" class="radb timedoston"> -->
+                              <div class="inpdiv">
+                              <input type="text" class="input vrdost timedoston" name="tymedost" maxlength="50" placeholder="время доставки" id="airdatepicker" value="">
+                              </div>
+                              </p>
+                
+      </div>
+       <div class="inpdiv">
+                  <p class="inp">Пожелания к заказу</p>
+                  <textarea name="deskription" class="input" rows="4"><?=$deskription;?></textarea>
+            </div>
+
+                  </div>
+
+                  <div class="box_r">
+                        <?php
+                              $LBS=LotsInBasket($user_id);
+                              //tt($LBS);
+                              $grand_total = 0;
+                              foreach($LBS as $LB)
+                                    {
+                        ?>
+                                          <div class="flex_bask">
+                                           <img src="<?=ABS_PATH;?>/images/<?=$LB['tovari_image'];?>" alt="<?=$LB['tovari_name'];?>" srcset="">
+                                                <div>
+                                                <p><?=$LB['tovari_name'];?></p>
+                                                <?php
+                        if($LB['tovari_new_price']>0)
+                        {
+                            $price=$LB['tovari_new_price'];
+                        }
+                        else
+                        {
+                            $price=$LB['tovari_price'];
+                        }
+                        ?>
+                                                <p><?=$price?> * <?=$LB['cart_qty'];?> = <?=$price*$LB['cart_qty'];?> руб</p>
+                                                </div>
+                                          </div>
+                        <?php
+                        $grand_total+=$price*$LB['cart_qty'];
+                                    }
+                        ?>
+                        Итого в корзине: <?=$grand_total;?> руб. 
+                  </div>
+            </div>
+           
+            <div class="btn-grid">
+            <div class="error" id="error"></div>      
+            <div class="btn_f"><input type="submit" value="Оформить заказ" name="oform_zakaz" class="btn_form"></div>
+            </div>
+  </div>
+</form>
+<!-- проверяем форму на валидность -->
+
+<script>
+
+document.getElementById('myForm').addEventListener('submit', function(event) {
+   // event.preventDefault(); // Предотвращаем отправку формы для проверки
+
+    
+    let message = '';
+    let isValida = true; // Флаг для проверки валидности.
+    const nameInp = document.getElementById('nameInp');
+    const phoneInp = document.getElementById('phoneInp');
+    const met_dost2Radio=document.getElementById('met_dost2');
+    const cenaInp=document.getElementById('cena');
+    const rb2Radio=document.getElementById('rb2');
+    const airdatepickerInp=document.querySelector('.vrdost');
+    const adressInp = document.getElementById('address');
+
+   
+
+    // Очищаем сообщение об ошибке
+    const errorDiv = document.getElementById("error");
+    errorDiv.innerHTML = ''; // Сбрасываем предыдущее сообщение об ошибке
+
+    if (nameInp.value.trim() === '') {
+        message += '<li>Пожалуйста, заполните поле имени.</li>';
+        isValida = false; // Устанавливаем флаг в false
+    }
+    if (phoneInp.value.trim() === '') {
+        message += '<li>Пожалуйста, заполните поле с телефоном.</li>'; // Исправлено на правильное сообщение
+
+        isValida = false; // Устанавливаем флаг в false
+    }
+    if(met_dost2Radio.checked && (isNaN(cenaInp.value) || cenaInp.value.trim() === ''))
+    {
+      message += '<li>Вы не ввели /ввели неправильно/ адрес</li>'; 
+      isValida = false; // Устанавливаем флаг в false
+    }
+    if(rb2Radio.checked && airdatepickerInp.value.trim() === '')
+    {
+      message += '<li>Вы не ввели дату и время доставки</li>';
+      isValida = false; // Устанавливаем флаг в false
+    }
+   
+    // Если message не пустой, отображаем его
+    if (message !== '') {
+      //event.preventDefault(); // Предотвращаем отправку формы для проверки
+      //   document.getElementById("error").innerHTML = message;
+      errorDiv.innerHTML = '<ul>' + message + '</ul>'; // Обертка в список
+       
+    } 
+    if (!isValida) {
+        event.preventDefault();
+    }
+
+});
+
+</script>
+
+<!-- проверяем форму на валидность -->
+
+
+<!-- рисуем карту -->
+<script src="<?=ABS_PATH?>assets/js/logistik-ya.js"></script>
+<!-- рисуем карту -->
+<?php
+}
+?>
+</section>
+ <!-- моб меню -->
+ <script src="<?=ABS_PATH?>assets/js/menu.js"></script>
+       <!-- моб меню -->
+        <!-- для подсказок адреса -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/js/jquery.suggestions.min.js"></script>
+        <script src="<?=ABS_PATH?>assets/js/dadata-radius.js"></script>
+        <!-- для подсказок адреса -->
+         <!-- маска номера телефона -->
+        <script src="<?=ABS_PATH?>assets/js/maska-nomera.js"></script>
+        <script src="<?=ABS_PATH?>assets/js/phone-mask.js"></script>
+        <!-- маска номера телефона -->
+        <!-- метод доставки -->
+        <script src="<?=ABS_PATH?>assets/js/met_dost.js"></script>
+        <!-- метод доставки -->
+         <!-- для календаря -->
+        <script src="<?=ABS_PATH?>assets/js/calendar.js"></script>
+        <script src="<?=ABS_PATH?>assets/js/nastr_calend.js"></script>
+        <!-- для календаря -->
+
+
+   <?php
+      include 'app/include/footer-front.php';
+      ?>
+</body>
+</html>
